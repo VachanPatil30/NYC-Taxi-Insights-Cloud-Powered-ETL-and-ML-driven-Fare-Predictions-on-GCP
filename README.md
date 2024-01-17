@@ -19,3 +19,13 @@ Here is the dataset used in the project: https://storage.googleapis.com/nyc_taxi
 More info about the dataset can be found from the following links:
 - Website: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page       
 - Data Dictionary: https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
+
+## Technology Used
+1. Programming Language:- Python, SQL
+2. Google Cloud Platform:- 
+   - Google Storage
+   - Compute Instance
+   - BigQuery
+   - Looker Studio
+   - BQML
+3. Modern Data Pipeine Tool:- https://www.mage.ai/
