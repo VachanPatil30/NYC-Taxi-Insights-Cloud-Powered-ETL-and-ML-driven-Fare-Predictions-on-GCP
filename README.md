@@ -26,6 +26,6 @@ More info about the dataset can be found from the following links:
    - Google Storage
    - Compute Instance
    - BigQuery
-   - Looker Studio:- [ Dashboard: https://lookerstudio.google.com/reporting/079bed3f-5364-400c-8e27-444739601af5]
+   - Looker Studio Dashboard:- https://lookerstudio.google.com/reporting/079bed3f-5364-400c-8e27-444739601af5
    - BQML
 3. Modern Data Pipeine Tool:- https://www.mage.ai/
