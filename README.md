@@ -81,9 +81,9 @@ mage start demo_project
 ```
 3. Perform orchestration in Mage by accessing the external IP address in a new tab using the format: <external IP address>:<port number>.
 4. Create a new pipeline with the following stages:
-   * Extract: nyc_taxi_load
-   * Transform: nyc_taxi_transformer
-   * Load: nyc_taxi_bigquery
+   * Extract: [nyc_taxi_load](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/blob/d9323960005c18e7a90ba20f88fa8056a6d92875/Mage/nyc_taxi_loader.py)
+   * Transform: [nyc_taxi_transformer](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/blob/d9323960005c18e7a90ba20f88fa8056a6d92875/Mage/nyc_taxi_transformer.py)
+   * Load: [nyc_taxi_bigquery](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/blob/d9323960005c18e7a90ba20f88fa8056a6d92875/Mage/nyc_taxi_bigquery.py)
 
 Before executing the Load pipeline, download credentials from Google API & Credentials. Update these credentials in the io_config.yaml file within the same pipeline. This step is crucial for authorizing access and loading data into Google BigQuery.
 
