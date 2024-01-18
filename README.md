@@ -33,3 +33,4 @@ More info about the dataset can be found from the following links:
 
 ## Data Modeling
 We transformed the flat file into fact and dimension tables, following the principles of data modeling. The ER diagram below was created using Lucidchart.
+![NYC_Taxi_Data_Model](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/d21039de-4971-40ea-8f70-51ea6637fd37)
