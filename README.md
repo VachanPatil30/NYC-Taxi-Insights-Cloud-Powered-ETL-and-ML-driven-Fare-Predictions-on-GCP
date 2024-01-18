@@ -32,5 +32,14 @@ More info about the dataset can be found from the following links:
 4. Lucidchart:- https://www.lucidchart.com/pages/
 
 ## Data Modeling
-We transformed the flat file into fact and dimension tables, following the principles of data modeling. The ER diagram below was created using Lucidchart.
+Created the ER diagram using Lucidchart, facilitating the visualization of how we intended to transform the flat table into a fact table
+
 ![NYC_Taxi_Data_Model](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/d21039de-4971-40ea-8f70-51ea6637fd37)
+
+## Step 1: Cleaning and Transformation
+In this step, I loaded the CSV file into Google Colab and carried out data cleaning and transformation activities before organizing them into fact and dim tables.
+
+Here are the specific cleaning and transformation tasks that were performed:
+* Converted tpep_pickup_datetime and tpep_dropoff_datetime columns into datetime format.
+* Removed duplicates and reset the index.
+* We transformed the flat file into fact and dimension tables, following the principles of data modeling. 
