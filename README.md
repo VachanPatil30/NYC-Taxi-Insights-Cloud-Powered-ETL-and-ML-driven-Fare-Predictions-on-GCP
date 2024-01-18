@@ -29,3 +29,7 @@ More info about the dataset can be found from the following links:
    - Looker Studio Dashboard:- https://lookerstudio.google.com/reporting/079bed3f-5364-400c-8e27-444739601af5
    - BQML
 3. Modern Data Pipeine Tool:- https://www.mage.ai/
+4. Lucidchart:- https://www.lucidchart.com/pages/
+
+## Data Modeling
+We transformed the flat file into fact and dimension tables, following the principles of data modeling. The ER diagram below was created using Lucidchart.
