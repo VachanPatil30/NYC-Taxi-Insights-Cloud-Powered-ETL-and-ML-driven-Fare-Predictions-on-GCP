@@ -42,4 +42,52 @@ In this step, I loaded the CSV file into Google Colab and carried out data clean
 Here are the specific cleaning and transformation tasks that were performed:
 * Converted tpep_pickup_datetime and tpep_dropoff_datetime columns into datetime format.
 * Removed duplicates and reset the index.
-* We transformed the flat file into fact and dimension tables, following the principles of data modeling. 
+* We transformed the flat file into fact and dimension tables, following the principles of data modeling.
+
+[Nyc_Taxi_Analytics.ipynb](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/blob/48a34fbdcec8d473efd0116359a74a61fc8522fd/Nyc_Taxi_Analytics.ipynb)
+
+## Step 2: ETL / Orchestration using mage
+1. Start by launching the SSH instance and installing the necessary libraries with the provided commands.
+   
+```python
+# Install python and pip 
+sudo apt-get install update
+
+sudo apt-get install python3-distutils
+
+sudo apt-get install python3-apt
+
+sudo apt-get install wget
+
+wget https://bootstrap.pypa.io/get-pip.py
+
+sudo python3 get-pip.py
+
+# Install Google Cloud Library
+sudo pip3 install google-cloud
+
+sudo pip3 install google-cloud-bigquery
+
+# Install Pandas
+sudo pip3 install pandas
+```
+2. Install the Mage AI library from the Mage AI GitHub and create a new project named "NYC Taxi Data Engineering "
+```python 
+# Install Mage library
+sudo pip3 install mage-ai
+
+# Create new project
+mage start demo_project
+```
+3. Perform orchestration in Mage by accessing the external IP address in a new tab using the format: <external IP address>:<port number>.
+4. Create a new pipeline with the following stages:
+   * Extract: nyc_taxi_load
+   * Transform: nyc_taxi_transformer
+   * Load: nyc_taxi_bigquery
+
+Before executing the Load pipeline, download credentials from Google API & Credentials. Update these credentials in the io_config.yaml file within the same pipeline. This step is crucial for authorizing access and loading data into Google BigQuery.
+
+
+
+
+
