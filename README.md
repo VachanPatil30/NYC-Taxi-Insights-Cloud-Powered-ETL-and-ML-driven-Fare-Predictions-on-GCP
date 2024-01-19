@@ -87,7 +87,181 @@ mage start demo_project
 
 Before executing the Load pipeline, download credentials from Google API & Credentials. Update these credentials in the io_config.yaml file within the same pipeline. This step is crucial for authorizing access and loading data into Google BigQuery.
 
+## Step 3: Clean and Transform Data in BigQuery
 
+In this section, I will discuss how I cleaned and prepared the data after pipelining the data from mage to big query
 
+### 1. Creating the Analytics Table by Joining Tables
+To consolidate and prepare the data, I created a final analytics table by joining various tables. This SQL script performs the necessary joins and selects relevant columns to form the analytics_table.
+```python
+CREATE OR REPLACE TABLE `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table` AS (
+SELECT 
+  f.trip_id,
+  f.VendorID,
+  d.tpep_pickup_datetime,
+  d.tpep_dropoff_datetime,
+  p.passenger_count,
+  t.trip_distance,
+  r.rate_code_name,
+  pick.pickup_latitude,
+  pick.pickup_longitude,
+  drop.dropoff_latitude,
+  drop.dropoff_longitude,
+  pay.payment_type_name,
+  f.fare_amount,
+  f.extra,
+  f.mta_tax,
+  f.tip_amount,
+  f.tolls_amount,
+  f.improvement_surcharge,
+  f.total_amount
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.fact_table` AS f
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.datetime_dim` AS d  
+  ON f.datetime_id = d.datetime_id
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.passenger_count_dim` AS p
+  ON p.passenger_count_id = f.passenger_count_id  
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.trip_distance_dim` AS t
+  ON t.trip_distance_id = f.trip_distance_id  
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.rate_code_dim` AS r 
+  ON r.rate_code_id = f.rate_code_id  
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.pickup_location_dim` AS pick
+ ON pick.pickup_location_id = f.pickup_location_id
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.dropoff_location_dim` AS drop
+  ON drop.dropoff_location_id = f.dropoff_location_id
+INNER JOIN `nyc-taxi-data-engineering.nyc_taxi_dataset.payment_type_dim` AS pay
+  ON pay.payment_type_id = f.payment_type_id
+);
+```
+### 2. Removing Negative Total Amounts
+Negative total amounts are invalid, so I filtered the records to exclude them while keeping those with a total amount of 0 (indicating canceled rides).
+```python
+#Removing the negative total amount
+CREATE OR REPLACE TABLE `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table` AS(
+SELECT *
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+WHERE total_amount>=0);
+```
+### 3. Removing rows with invalid latitude or longitude
+To ensure data accuracy, I filtered out records with invalid latitude or longitude values (0 values) for both pickup and dropoff locations.
+```python
+#Removing rows with invalid latitude or longitude
+CREATE OR REPLACE TABLE `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table` AS(
+select *
+from `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+WHERE (pickup_latitude != 0 AND pickup_longitude != 0) 
+  AND
+  (dropoff_latitude != 0 AND dropoff_longitude != 0))
+```
 
+### 4. Adding zones and boroughs
+Utilizing the public dataset new_york_taxi_trips.taxi_zone_geom in BigQuery, I enriched the analytics table by incorporating pickup and dropoff zones and boroughs.
+```python
+# Adding zones and boroughs
+CREATE OR REPLACE TABLE `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table` AS (
+  SELECT 
+    t.*,
+    tz_pu.zone_id AS pickup_zone_id,
+    tz_pu.zone_name AS pickup_zone_name,
+    tz_pu.borough AS pickup_borough,
+    tz_do.zone_id AS dropoff_zone_id,
+    tz_do.zone_name AS dropoff_zone_name,
+    tz_do.borough AS dropoff_borough,
+    CONCAT(tz_pu.borough, "-", tz_do.borough) AS route_borough,
+    CONCAT(tz_pu.zone_name, "-", tz_do.zone_name) AS route_zone_name
+FROM 
+  `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table` t
+/* find the boroughs and zone names for dropoff locations */
+INNER JOIN `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_do ON 
+  ST_DWithin(tz_do.zone_geom, ST_GeogPoint(t.dropoff_longitude, t.dropoff_latitude), 0)
+/* find the boroughs and zone names for pickup locations */
+INNER JOIN `bigquery-public-data.new_york_taxi_trips.taxi_zone_geom` tz_pu ON 
+  ST_DWithin(tz_pu.zone_geom, ST_GeogPoint(t.pickup_longitude, t.pickup_latitude), 0));
+```
 
+## Step 4: Analytics
+After cleaning and transforming our data we will perform some analysis on them:
+
+### 1. Timeframe Covered by Yellow Taxi Trips
+```python
+# What is the timeframe covered by the Yellow taxi trips in our dataset?
+SELECT
+ min(tpep_pickup_datetime) as start_date, max(tpep_dropoff_datetime) as end_date
+FROM
+  `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+```
+![Screenshot 2024-01-18 222920](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/931a4418-c034-45ea-b61b-6ffe02b3284e)                              
+
+The dataset covers taxi records from March 1 to March 11, 2016.
+
+ ### 2. Average Speed of Yellow Taxi Trips
+ ```python
+SELECT CONCAT(ROUND(AVG(trip_distance/TIMESTAMP_DIFF(tpep_dropoff_datetime, tpep_pickup_datetime, SECOND)*3600),2)," MPH") as AVG_Speed
+FROM  `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+WHERE trip_distance>0
+AND tpep_dropoff_datetime>tpep_pickup_datetime
+```
+![Screenshot 2024-01-18 223248](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/11370256-83b8-4387-8120-bf0cc7940f8c)
+
+The average speed of Yellow taxis is calculated to be 12.76 MPH.
+
+### 3. Trip Cancellation Rate
+```python
+SELECT 
+  COUNTIF(trip_distance = 0) as trip_cancelled,
+  COUNT(*) as total_trips,
+  CONCAT(ROUND(COUNTIF(trip_distance = 0) / COUNT(*)*100,2),'%') as cancellation_rate
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`;
+```
+![Screenshot 2024-01-18 223502](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/2e18ca63-72f1-4967-935a-0a472df51a03)
+
+The dataset recorded 98,623 trips, with 332 cancellations, resulting in a cancellation rate of 0.34%.
+
+### 4. Top 3 Popular Pickup Locations
+```
+SELECT pickup_borough as Borough, COUNT(*) as total_trips,
+concat(ROUND (COUNT(*)/(SELECT COUNT(*) FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`)*100, 2),"%") AS Trip_rate
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+GROUP BY pickup_borough
+ORDER BY 2 DESC
+LIMIT 3
+```
+![Screenshot 2024-01-18 223922](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/559972bd-26e1-405b-8800-b290b2019fa7)
+
+Manhattan stands out as the most popular pickup location, constituting 92% of trips.
+
+### 5. Popular routes
+```python
+SELECT route_borough as Route, COUNT(*) as total_trips,
+concat(ROUND (COUNT(*)/(SELECT COUNT(*) FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`)*100, 2),"%") AS Trip_rate
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+GROUP BY route_borough
+ORDER BY 2 DESC
+```
+![Screenshot 2024-01-18 224423](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/8f035dc6-6f04-4a17-9d02-713726bed84b)
+
+About 83% of the popular routes are within Manhattan, providing insights into passenger preferences.
+
+### 6. Top 5 Routes by zone
+```python
+SELECT route_zone_name as Route, COUNT(*) as total_trips,
+concat(ROUND (COUNT(*)/(SELECT COUNT(*) FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`)*100, 2),"%") AS Trip_rate,
+CONCAT(ROUND(AVG(trip_distance),2)," Miles") as Avg_distance
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+GROUP BY route_zone_name
+ORDER BY 2 DESC
+LIMIT 5
+```
+![Screenshot 2024-01-18 224736](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/c7108d92-ecf2-4a29-af4e-c007f7c61699)
+
+Identifying popular routes by zone provides valuable information for directing drivers and estimating trip distances.
+
+### 7. Payment Type Distribution
+```python
+SELECT payment_type_name, COUNT(*) as Total_trips
+FROM `nyc-taxi-data-engineering.nyc_taxi_dataset.analytics_table`
+GROUP BY 1
+order by 2 DESC
+```
+![Screenshot 2024-01-18 225415](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/140632d1-c189-44d6-a2b0-e1fc2e7a7872)
+
+The majority of payments are made by credit card, emphasizing the importance of a reliable payment gateway. Payments in cash are observed, and instances recorded as "No charge" or "Dispute" signal potential issues that warrant investigation by the Customer Satisfaction Department for resolution and improved service.
