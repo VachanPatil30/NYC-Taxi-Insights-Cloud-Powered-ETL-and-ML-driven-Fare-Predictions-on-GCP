@@ -1,13 +1,13 @@
 # NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP
+![nyc-taxi](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/92603fd9-650c-4b0e-bb40-5cbbf7f284cd)
 
 ## Objective
-In this project, my objective was to design and implement an end-to-end data pipeline, encompassing the following stages:
-
-1. Extracted 100k records from the 2016 TLC Website, loading them into Google Cloud Storage for initial processing.
-2. Applied fact and dimensional data modeling techniques using Python on Jupyter Notebook to comprehensively transform and model the data.
-3. Orchestrated the ETL pipeline on Mage AI, ensuring the seamless loading of transformed data into Google BigQuery.
-4. Conducted in-depth analysis using BigQuery, uncovering key patterns translated into a user-friendly Looker Studio dashboard.
-5. Implemented a precise taxi fare forecasting model using BQML, achieving an RMSE of 4.03 for accurate prediction.
+The objective of this project is to design and implement an end-to-end data pipeline, encompassing the following stages:
+1. Extract 100,000 records from the 2016 TLC Website, and load them into Google Cloud Storage for initial processing.
+2. Apply fact and dimensional data modeling techniques using Python in Jupyter Notebook to comprehensively transform and model the data.
+3. Orchestrate the ETL pipeline on Mage AI, ensuring the seamless loading of transformed data into Google BigQuery.
+4. Conduct in-depth analysis using BigQuery, uncovering key patterns translated into a user-friendly Looker Studio dashboard.
+5. Finally, implement a precise taxi fare forecasting model using BQML.
 
 ## Dataset Used
 In our project we used a dataset from TLC Trip Record Data Yellow and green taxi trip records include fields capturing pick-up and drop-off dates/times, pick-up and drop-off locations, trip distances, itemized fares, rate types, payment types, and driver-reported passenger counts.
@@ -267,6 +267,7 @@ The majority of payments are made by credit card, emphasizing the importance of 
 
 ## Step 5: Dashboard
 Following the analysis, I imported pertinent tables into Looker Studio and crafted a dashboard, accessible for viewing [here](https://lookerstudio.google.com/reporting/079bed3f-5364-400c-8e27-444739601af5).
+![Screenshot 2024-01-19 220545](https://github.com/VachanPatil30/NYC-Taxi-Insights-Cloud-Powered-ETL-and-ML-driven-Fare-Predictions-on-GCP/assets/79377852/859d7bea-86d0-435e-9c70-6d3d86b23941)
 
 ## Step 6: Predict Taxi Fare with a BigQuery ML Forecasting Model
 **Objective:** Create a machine learning model in BigQuery to predict New York City cab ride fares using historical trip data. Predicting fares in advance enhances trip planning for both riders and taxi agencies.
